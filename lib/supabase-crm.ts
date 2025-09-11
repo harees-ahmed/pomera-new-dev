@@ -116,28 +116,29 @@ async function withErrorHandling<T>(
   try {
     const data = await operation();
     return data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Enhanced error logging for debugging
     console.error(`${errorMessage}:`, {
       error: error,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-      stack: error.stack
+      message: error instanceof Error ? error.message : 'Unknown error',
+      details: (error as any)?.details,
+      hint: (error as any)?.hint,
+      code: (error as any)?.code,
+      stack: error instanceof Error ? error.stack : undefined
     });
     
     // Create more descriptive error messages
     let errorMsg = errorMessage;
     if (error && typeof error === 'object') {
-      if (error.message) {
-        errorMsg += `: ${error.message}`;
+      const errorObj = error as any;
+      if (errorObj.message) {
+        errorMsg += `: ${errorObj.message}`;
       }
-      if (error.details) {
-        errorMsg += ` (${error.details})`;
+      if (errorObj.details) {
+        errorMsg += ` (${errorObj.details})`;
       }
-      if (error.hint) {
-        errorMsg += ` - Hint: ${error.hint}`;
+      if (errorObj.hint) {
+        errorMsg += ` - Hint: ${errorObj.hint}`;
       }
     } else if (error) {
       errorMsg += `: ${String(error)}`;
@@ -285,7 +286,7 @@ class CRMDatabase {
   }
 
   // Check table structure for debugging
-  async checkTableStructure(): Promise<any> {
+  async checkTableStructure(): Promise<{ fields: string[]; sample: Record<string, unknown> | null }> {
     return withErrorHandling(async () => {
       // Try a simple query to see what fields exist
       const { data: sampleData, error: sampleError } = await supabase
@@ -395,10 +396,10 @@ class CRMDatabase {
         company.company_status = 'lead';
       }
       
-      // Clean up empty date fields - convert empty strings to null
+      // Clean up empty date fields - convert empty strings to undefined
       const cleanedCompany = { ...company };
       if (cleanedCompany.expected_close_date === '') {
-        cleanedCompany.expected_close_date = null;
+        cleanedCompany.expected_close_date = undefined;
       }
       
       // Add timestamps
@@ -639,8 +640,7 @@ class CRMDatabase {
           note_type: note.type,
           note_type_id: noteType.id,
           note_text: note.text,
-          follow_up_date: note.follow_up_date || null,
-          follow_up_type: note.follow_up_type || null,
+          follow_up_date: note.follow_up_date || undefined,
           created_date: new Date().toISOString()
         };
       } else {

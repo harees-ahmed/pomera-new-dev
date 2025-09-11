@@ -7,19 +7,19 @@ export class AppError extends Error {
     message: string,
     public code?: string,
     public statusCode?: number,
-    public details?: any
+    public details?: unknown
   ) {
     super(message);
     this.name = 'AppError';
   }
 }
 
-export interface ErrorResponse<T = any> {
+export interface ErrorResponse<T = unknown> {
   data?: T;
   error?: {
     message: string;
     code?: string;
-    details?: any;
+    details?: unknown;
   };
 }
 
@@ -28,16 +28,16 @@ export async function withErrorHandling<T>(
   options?: {
     errorMessage?: string;
     showToast?: boolean;
-    onError?: (error: any) => void;
+    onError?: (error: unknown) => void;
   }
 ): Promise<ErrorResponse<T>> {
   try {
     const data = await operation();
     return { data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Operation failed:', error);
     
-    const errorMessage = options?.errorMessage || error.message || 'An unexpected error occurred';
+    const errorMessage = options?.errorMessage || (error instanceof Error ? error.message : 'An unexpected error occurred');
     
     if (options?.showToast !== false) {
       toast.error(errorMessage);
@@ -47,28 +47,30 @@ export async function withErrorHandling<T>(
       options.onError(error);
     }
     
+    const errorObj = error as any;
     return {
       error: {
         message: errorMessage,
-        code: error.code,
-        details: error.details
+        code: errorObj.code,
+        details: errorObj.details
       }
     };
   }
 }
 
-export function handleSupabaseError(error: any): string {
-  if (error.code === '23505') {
+export function handleSupabaseError(error: unknown): string {
+  const errorObj = error as any;
+  if (errorObj.code === '23505') {
     return 'This record already exists';
   }
-  if (error.code === '23503') {
+  if (errorObj.code === '23503') {
     return 'Cannot delete this record as it is referenced by other data';
   }
-  if (error.code === '42501') {
+  if (errorObj.code === '42501') {
     return 'You do not have permission to perform this action';
   }
-  if (error.code === 'PGRST116') {
+  if (errorObj.code === 'PGRST116') {
     return 'Record not found';
   }
-  return error.message || 'Database operation failed';
+  return errorObj.message || 'Database operation failed';
 }
