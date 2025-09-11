@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/pomera-new' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/pomera-new' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/pomera-new-dev' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/pomera-new-dev' : '',
 };
 
 export default nextConfig;
