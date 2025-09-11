@@ -189,7 +189,6 @@ export default function CompanyModal({
                   onAddressesChange={onAddressesChange}
                   saving={saving}
                   isNewCompany={false}
-                  readOnly={true}
                 />
                     </div>
             )}

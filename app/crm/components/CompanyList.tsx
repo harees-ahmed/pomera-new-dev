@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from '@/components/ui/button';
-import { Eye, Edit, Mail, Phone, MapPin } from 'lucide-react';
+import { Eye, Edit, Mail, MapPin } from 'lucide-react';
 import { type Company, type DimensionValue } from '@/lib/supabase-crm';
 
 interface CompanyListProps {
@@ -12,6 +12,7 @@ interface CompanyListProps {
   onEditLead: (company: Company) => void;
   dimensions: {
     scores: DimensionValue[];
+    statuses: DimensionValue[];
   };
 }
 
@@ -119,18 +120,14 @@ export default function CompanyList({
                   </span>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  {company.contact_email || 'No email'}
-                </div>
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {company.contact_phone || 'No phone'}
+                  {company.company_website || 'No website'}
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
-                  {company.city && company.state ? `${company.city}, ${company.state}` : 'No location'}
+                  {company.industry || 'No industry'}
                 </div>
               </div>
               {company.opportunity_value && company.opportunity_value > 0 && (
