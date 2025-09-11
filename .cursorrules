@@ -1,0 +1,89 @@
+# Cursor Rules for Pomera Care Project
+
+## 1. Unified Development Workflow Rule
+During development, the project should have no separate test or production workflows. All code should be unified. Testing scripts should preferably be virtual, or if actual files are created they should include "*TEST*" in the filename and be deleted once testing is completed and logic is merged into the core code.
+
+## 2. Precise Instructions Rule
+Only change what you are explicitly instructed to change. Do not make any modifications beyond the specific request unless they are absolutely necessary upstream/downstream dependencies. No design changes, field modifications, or architectural changes unless specifically requested.
+
+## 3. Clarification First Rule
+When instructions are unclear or ambiguous, ask for clarification before proceeding. It's better to take 30 seconds to get it right than to waste time on incorrect implementations. Ask specific questions about scope, technical decisions, and business logic.
+
+## 4. No Fake Data Rule
+NEVER insert fake, placeholder, or sample data into any workflow, application, or code unless explicitly instructed to do so. Use empty values, null, or undefined instead of fake content. Show clear error messages when data is missing.
+
+## 5. Test and Debug Management Rule
+Keep the codebase clean and focused on a single application workflow without premature testing infrastructure or environment separation. No test files, testing frameworks, or dev/prod splits unless explicitly requested. Remove debugging code when issues are resolved.
+
+## 6. Direct Communication Rule
+No excessive compliments or unnecessary praise. Use direct and efficient communication style. Provide honest feedback with clear reasoning. Maintain professional tone focused on work, not social pleasantries.
+
+## 7. Agent Communication Rule
+Always check agent messages for changes prior to executing work, and inform other agents/modules of any code changes that could impact them. Maintain proper coordination between all system components to prevent conflicts and ensure seamless integration.
+
+## 8. Database Documentation Rule
+Whenever database schema changes are made (new tables, modified fields, new relationships, etc.), the DATA_DICTIONARY.md file must be updated to reflect these changes. This includes:
+- Adding new table descriptions with business logic and usage
+- Updating existing table documentation for modified fields
+- Documenting new business rules and relationships
+- Updating application usage sections
+- Adding entries to the version history table
+- Ensuring all foreign key relationships are documented
+- Updating sample values for dimension tables if changed
+
+## 9. Tooltip Usage Rule
+Always use the existing `CustomTooltip` component from `@/components/ui/custom-tooltip` for any field that needs additional information or help text. Do not create new tooltip implementations.
+
+**Usage:**
+```tsx
+import CustomTooltip from '@/components/ui/custom-tooltip';
+<CustomTooltip content="Your help text here" />
+```
+
+## 10. Dimension Table Flexibility Rule
+Never hard-code logic that should be driven by values/fields in dimension tables. The values in these tables can and will change over time (and for different companies/clients may be completely different for fields like "lead status" so all design work should be done to create a system that is future-proof and highly flexible/customizable. Always avoid hard-coded coding when flexible logic can be used.
+
+**Examples of what to avoid:**
+- Hard-coding status values like `'lead'`, `'prospect'`, `'client'` in switch statements
+- Hard-coding color mappings for lead scores instead of using dimension table color fields
+- Hard-coding dropdown options instead of fetching from dimension tables
+- Hard-coding business logic that should be configurable per client
+
+**Examples of proper implementation:**
+- Use `dimensions.scores.map()` to generate dropdown options
+- Use `dimensions.scores.find()` to get color values from dimension tables
+- Use `dimensions.statuses` to generate status tabs dynamically
+- Query dimension tables for all configurable values
+
+## 11. Database Access Rule
+When needing to query or manipulate the Supabase database directly, ALWAYS use Next.js API routes instead of standalone Node.js scripts. The environment variables and Supabase client are properly configured within the Next.js application context.
+
+**Correct approach:**
+- Create API routes in `app/api/` directory
+- Use existing `{ supabase } from '@/lib/supabase'` client
+- Call the API via HTTP requests (curl, PowerShell Invoke-WebRequest, or fetch)
+- Delete temporary API routes after use
+
+**Never do:**
+- Create standalone Node.js scripts that try to access environment variables
+- Attempt to manually configure Supabase clients in scripts
+- Use workarounds like dotenv.config() in standalone scripts
+- Fight against the Next.js architecture
+
+**Example:**
+```typescript
+// app/api/temp-operation/route.ts
+import { supabase } from '@/lib/supabase';
+export async function POST() {
+  const { data, error } = await supabase.from('table').select('*');
+  return Response.json({ data, error });
+}
+```
+
+## 12. GitHub Backup Rule
+When backing up changes to GitHub, ALWAYS use `git push origin main` because both local and remote branches are "main". The correct process is:
+1. `git add .` to stage all changes
+2. `git commit -m "descriptive message"` to commit changes
+3. `git push origin main` to push to GitHub
+
+**Never use:** `git push origin HEAD:master` (incorrect branch name)
