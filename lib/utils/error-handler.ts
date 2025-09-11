@@ -51,8 +51,8 @@ export async function withErrorHandling<T>(
     return {
       error: {
         message: errorMessage,
-        code: errorObj.code,
-        details: errorObj.details
+        code: errorObj.code as string | undefined,
+        details: errorObj.details as string | undefined
       }
     };
   }
@@ -72,5 +72,5 @@ export function handleSupabaseError(error: unknown): string {
   if (errorObj.code === 'PGRST116') {
     return 'Record not found';
   }
-  return errorObj.message || 'Database operation failed';
+  return (errorObj.message as string) || 'Database operation failed';
 }

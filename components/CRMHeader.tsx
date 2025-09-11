@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
@@ -33,13 +34,13 @@ const CRMHeader = () => {
         <div className="flex items-center h-16">
           {/* Logo */}
           <div className="flex items-center pl-24">
-            <a href="/" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <img 
                 src="./pomera_logo_cropped.png" 
                 alt="Pomera Care Logo" 
                 className="h-12 w-auto"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}

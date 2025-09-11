@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
-import { crmDatabase, type DimensionValue } from '@/lib/supabase-crm';
+import { crmDatabase, type DimensionValue, type CompanyNote } from '@/lib/supabase-crm';
 import { toast } from 'react-hot-toast';
 
 interface NotesSectionProps {
   companyId: string;
-  notes: any[];
+  notes: CompanyNote[];
   noteTypes: DimensionValue[];
   contactMethods: DimensionValue[];
-  onNotesChange: (notes: any[]) => void;
+  onNotesChange: (notes: CompanyNote[]) => void;
   saving: boolean;
   readOnly?: boolean;
   onNoteSaved?: () => void;
@@ -42,7 +42,7 @@ export default function NotesSection({
     }
 
     // Validate follow-up date is not in the past
-    if (newNote.followUpDate && new Date(newNote.followUpDate) < new Date().setHours(0, 0, 0, 0)) {
+    if (newNote.followUpDate && new Date(newNote.followUpDate) < new Date(new Date().setHours(0, 0, 0, 0))) {
       toast.error('Follow-up date cannot be in the past');
       return;
     }
@@ -52,8 +52,8 @@ export default function NotesSection({
         company_id: companyId,
         type: newNote.type,
         text: newNote.text,
-        follow_up_date: newNote.followUpDate || null,
-        follow_up_type: newNote.followUpType || null
+        follow_up_date: newNote.followUpDate || undefined,
+        follow_up_type: newNote.followUpType || undefined
       });
       
       onNotesChange([...notes, newNoteData]);
@@ -72,7 +72,7 @@ export default function NotesSection({
     }
   };
 
-  const handleDeleteNote = async (note: any, index: number) => {
+  const handleDeleteNote = async (note: CompanyNote, index: number) => {
     if (confirm('Are you sure you want to delete this note?')) {
       try {
         if (note.note_id) {

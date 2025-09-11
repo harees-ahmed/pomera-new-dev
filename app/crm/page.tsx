@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Filter } from 'lucide-react';
-import { crmDatabase, type Company, type DimensionValue } from '@/lib/supabase-crm';
+import { crmDatabase, type Company, type DimensionValue, type CompanyNote, type CompanyContact, type CompanyAddress } from '@/lib/supabase-crm';
 import { toast } from 'react-hot-toast';
 import CompanyForm from './components/CompanyForm';
 import CompanyList from './components/CompanyList';
@@ -53,9 +53,9 @@ export default function CRMPage() {
   const [selectedLead, setSelectedLead] = useState<Company | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [notes, setNotes] = useState<any[]>([]);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [notes, setNotes] = useState<CompanyNote[]>([]);
+  const [contacts, setContacts] = useState<CompanyContact[]>([]);
+  const [addresses, setAddresses] = useState<CompanyAddress[]>([]);
 
   // Load data on component mount
   useEffect(() => {
@@ -248,8 +248,7 @@ export default function CRMPage() {
     );
     
     const matchesSearch = company.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.contact_email?.toLowerCase().includes(searchTerm.toLowerCase());
+                         company.industry?.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesTab && (searchTerm === '' || matchesSearch);
   }) : [];
