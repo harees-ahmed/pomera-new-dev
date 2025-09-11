@@ -47,7 +47,7 @@ export async function withErrorHandling<T>(
       options.onError(error);
     }
     
-    const errorObj = error as any;
+    const errorObj = error as Record<string, unknown>;
     return {
       error: {
         message: errorMessage,
@@ -59,7 +59,7 @@ export async function withErrorHandling<T>(
 }
 
 export function handleSupabaseError(error: unknown): string {
-  const errorObj = error as any;
+  const errorObj = error as Record<string, unknown>;
   if (errorObj.code === '23505') {
     return 'This record already exists';
   }

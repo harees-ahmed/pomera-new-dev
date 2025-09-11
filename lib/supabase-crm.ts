@@ -118,19 +118,19 @@ async function withErrorHandling<T>(
     return data;
   } catch (error: unknown) {
     // Enhanced error logging for debugging
+    const errorObj = error as Record<string, unknown>;
     console.error(`${errorMessage}:`, {
       error: error,
       message: error instanceof Error ? error.message : 'Unknown error',
-      details: (error as any)?.details,
-      hint: (error as any)?.hint,
-      code: (error as any)?.code,
+      details: errorObj?.details,
+      hint: errorObj?.hint,
+      code: errorObj?.code,
       stack: error instanceof Error ? error.stack : undefined
     });
     
     // Create more descriptive error messages
     let errorMsg = errorMessage;
     if (error && typeof error === 'object') {
-      const errorObj = error as any;
       if (errorObj.message) {
         errorMsg += `: ${errorObj.message}`;
       }

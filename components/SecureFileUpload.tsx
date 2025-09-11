@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, File, X, AlertCircle, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
+import { Upload, File, AlertCircle, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface UploadedFile {
@@ -103,7 +103,7 @@ export default function SecureFileUpload({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [onFileUpload, selectedCategory, maxFileSize, allowedTypes]);
+  }, [onFileUpload, selectedCategory, maxFileSize, allowedTypes, validateFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

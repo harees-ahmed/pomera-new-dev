@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Heart, Shield } from 'lucide-react';
+import Image from 'next/image';
 import heroImage from '@/assets/hero-medical-staff.jpg';
 
 const Hero = () => {
@@ -7,10 +8,12 @@ const Hero = () => {
     <section className="relative min-h-[70vh] flex items-center">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <img 
+        <Image 
           src={heroImage} 
           alt="Medical professionals" 
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-primary/80"></div>
       </div>
