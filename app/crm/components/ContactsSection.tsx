@@ -17,6 +17,7 @@ interface ContactsSectionProps {
   onContactsChange: (contacts: CompanyContact[]) => void;
   saving: boolean;
   isNewCompany?: boolean;
+  readOnly?: boolean;
 }
 
 export default function ContactsSection({ 
@@ -26,7 +27,8 @@ export default function ContactsSection({
   contactMethods,
   onContactsChange,
   saving,
-  isNewCompany = false
+  isNewCompany = false,
+  readOnly = false
 }: ContactsSectionProps) {
   const [newContact, setNewContact] = useState<Partial<CompanyContact>>({
     contact_type: '',
@@ -36,7 +38,7 @@ export default function ContactsSection({
     contact_email: '',
     contact_phone: '',
     contact_mobile: '',
-    preferred_contact_method: ''
+    preferred_contact_method: undefined
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -77,7 +79,7 @@ export default function ContactsSection({
           contact_email: newContact.contact_email || '',
           contact_phone: newContact.contact_phone,
           contact_mobile: newContact.contact_mobile,
-          preferred_contact_method: newContact.preferred_contact_method || '',
+          preferred_contact_method: newContact.preferred_contact_method,
           is_active: true,
           created_date: new Date().toISOString(),
           updated_date: new Date().toISOString()
@@ -92,7 +94,7 @@ export default function ContactsSection({
           contact_email: '',
           contact_phone: '',
           contact_mobile: '',
-          preferred_contact_method: ''
+          preferred_contact_method: undefined
         });
         setShowAddForm(false);
         toast.success('Contact added (will be saved when company is created)');
@@ -112,7 +114,7 @@ export default function ContactsSection({
           contact_email: '',
           contact_phone: '',
           contact_mobile: '',
-          preferred_contact_method: ''
+          preferred_contact_method: undefined
         });
         setShowAddForm(false);
         toast.success('Contact added successfully');
@@ -177,19 +179,21 @@ export default function ContactsSection({
 
   return (
     <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <Button
-          type="button"
-          onClick={toggleAddForm}
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add Contact
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            type="button"
+            onClick={toggleAddForm}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Contact
+          </Button>
+        </div>
+      )}
 
-      {showAddForm && (
+      {!readOnly && showAddForm && (
         <div className="mb-4 p-4 border rounded-lg bg-gray-50">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -353,13 +357,15 @@ export default function ContactsSection({
                   </div>
                 </div>
                 
-                <button
-                  onClick={() => handleDeleteContact(contact, index)}
-                  className="text-red-500 hover:text-red-700"
-                  disabled={saving}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {!readOnly && (
+                  <button
+                    onClick={() => handleDeleteContact(contact, index)}
+                    className="text-red-500 hover:text-red-700"
+                    disabled={saving}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))
