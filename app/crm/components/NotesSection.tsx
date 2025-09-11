@@ -163,7 +163,7 @@ export default function NotesSection({
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-700">{note.note_type || note.type}</span>
+                    <span className="text-sm font-medium text-gray-700">{note.note_type}</span>
                     {note.follow_up_date && (
                       <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                         Follow-up: {new Date(note.follow_up_date).toLocaleDateString()}
@@ -171,9 +171,9 @@ export default function NotesSection({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm mt-1">{note.note_text || note.text}</p>
+                  <p className="text-sm mt-1">{note.note_text}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {new Date(note.created_date || note.date).toLocaleString()}
+                    {new Date(note.created_date).toLocaleString()}
                   </p>
                 </div>
                 {!readOnly && (
