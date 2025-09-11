@@ -75,7 +75,7 @@ export default function CRMPage() {
       console.log('Type of companiesResult:', typeof companiesResult);
       console.log('companiesResult length:', companiesResult?.length);
       
-      if (companiesResult) {
+      if (companiesResult && Array.isArray(companiesResult)) {
         console.log('Setting companies with data:', companiesResult);
         setCompanies(companiesResult);
       } else {

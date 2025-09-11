@@ -153,8 +153,8 @@ class CRMDatabase {
   // ==================== DIMENSION MANAGEMENT ====================
   
   async getDimensions(tableName: string) {
-    return withErrorHandling(async () => {
-      console.log(`Fetching dimensions from table: ${tableName}`);
+    try {
+      console.log(`=== FETCHING DIMENSIONS FROM ${tableName} ===`);
       
       const { data, error } = await supabase
         .from(tableName)
@@ -254,7 +254,10 @@ class CRMDatabase {
       
       console.log(`Final mapped data for ${tableName}:`, mappedData);
       return mappedData;
-    }, `Failed to fetch dimensions from ${tableName}`);
+    } catch (error) {
+      console.error(`Error fetching dimensions from ${tableName}:`, error);
+      throw error;
+    }
   }
 
   async getCompanyStatuses() {
@@ -338,7 +341,11 @@ class CRMDatabase {
     limit?: number;
     offset?: number;
   }) {
-    return withErrorHandling(async () => {
+    try {
+      console.log('=== GET COMPANIES DEBUG ===');
+      console.log('Supabase client:', supabase);
+      console.log('Filters:', filters);
+      
       // Use the view if it exists, otherwise use the table
       let query = supabase
         .from('companies')
@@ -361,11 +368,22 @@ class CRMDatabase {
         query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
       }
 
+      console.log('Executing query...');
       const { data, error } = await query;
       
-      if (error) throw error;
+      console.log('Query result:', { data, error });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Returning data:', data);
       return data as Company[];
-    }, 'Failed to fetch companies');
+    } catch (error) {
+      console.error('Error in getCompanies:', error);
+      throw error;
+    }
   }
 
   async getCompanyById(companyId: string) {
