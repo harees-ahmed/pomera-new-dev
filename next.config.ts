@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/pomera-new-dev' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/pomera-new-dev' : '',
+  basePath: '/pomera-new-dev',
+  assetPrefix: '/pomera-new-dev/',
   eslint: {
     ignoreDuringBuilds: true,
   },
