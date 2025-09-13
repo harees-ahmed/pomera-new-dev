@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CRMHeader from '@/components/CRMHeader';
+import { adminService, type AdminUser, type AdminRole, type AuditLog } from '@/lib/admin-service';
 import { 
   Users, 
   Settings, 
@@ -51,6 +52,44 @@ export default function AdminPage() {
   const [roleStatusFilter, setRoleStatusFilter] = useState('all');
   const [databaseStatusFilter, setDatabaseStatusFilter] = useState('Active');
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
+  
+  // Data state
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [roles, setRoles] = useState<AdminRole[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [systemStats, setSystemStats] = useState({
+    totalCompanies: 0,
+    activeCompanies: 0,
+    totalUsers: 0,
+    systemUptime: '99.9%'
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Load data on component mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [usersData, rolesData, auditLogsData, statsData] = await Promise.all([
+        adminService.getUsers(),
+        adminService.getRoles(),
+        adminService.getAuditLogs(),
+        adminService.getSystemStats()
+      ]);
+      
+      setUsers(usersData);
+      setRoles(rolesData);
+      setAuditLogs(auditLogsData);
+      setSystemStats(statsData);
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -62,64 +101,7 @@ export default function AdminPage() {
     { id: 'database', label: 'Manage Database', icon: Database },
   ];
 
-  // Mock user data
-  const users = [
-    {
-      id: 1,
-      name: 'John Smith',
-      email: 'john.smith@pomera.com',
-      userType: 'Internal',
-      role: 'Admin',
-      status: 'Active',
-      lastLogin: '2024-01-15 10:30',
-      createdAt: '2023-06-15',
-      avatar: null
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@pomera.com',
-      userType: 'Internal',
-      role: 'Manager',
-      status: 'Active',
-      lastLogin: '2024-01-14 16:45',
-      createdAt: '2023-08-22',
-      avatar: null
-    },
-    {
-      id: 3,
-      name: 'Mike Chen',
-      email: 'mike.chen@pomera.com',
-      userType: 'Client',
-      role: 'User',
-      status: 'Inactive',
-      lastLogin: '2024-01-10 09:15',
-      createdAt: '2023-11-03',
-      avatar: null
-    },
-    {
-      id: 4,
-      name: 'Emily Davis',
-      email: 'emily.davis@pomera.com',
-      userType: 'Client',
-      role: 'Manager',
-      status: 'Pending',
-      lastLogin: null,
-      createdAt: '2024-01-12',
-      avatar: null
-    },
-    {
-      id: 5,
-      name: 'David Wilson',
-      email: 'david.wilson@pomera.com',
-      userType: 'Applicant',
-      role: 'User',
-      status: 'Active',
-      lastLogin: '2024-01-15 14:20',
-      createdAt: '2023-09-18',
-      avatar: null
-    }
-  ];
+  // Users data is now loaded from adminService
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -130,99 +112,7 @@ export default function AdminPage() {
     }
   };
 
-  // Mock audit log data
-  const auditLogs = [
-    {
-      id: 1,
-      datetime: '2024-01-15 14:32:15',
-      user: 'John Smith',
-      action: 'User Login',
-      details: 'Successful login from IP 192.168.1.100',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    },
-    {
-      id: 2,
-      datetime: '2024-01-15 14:28:42',
-      user: 'Sarah Johnson',
-      action: 'Company Created',
-      details: 'Created new company: Acme Corporation',
-      ipAddress: '192.168.1.105',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    },
-    {
-      id: 3,
-      datetime: '2024-01-15 14:25:18',
-      user: 'Mike Chen',
-      action: 'Contact Updated',
-      details: 'Updated contact: Jane Doe (jane.doe@acme.com)',
-      ipAddress: '192.168.1.102',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    },
-    {
-      id: 4,
-      datetime: '2024-01-15 14:20:33',
-      user: 'Emily Davis',
-      action: 'User Permission Changed',
-      details: 'Changed permissions for user: David Wilson (Manager → User)',
-      ipAddress: '192.168.1.108',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    },
-    {
-      id: 5,
-      datetime: '2024-01-15 14:15:07',
-      user: 'System',
-      action: 'Database Backup',
-      details: 'Automated daily backup completed successfully',
-      ipAddress: '127.0.0.1',
-      userAgent: 'System Process'
-    },
-    {
-      id: 6,
-      datetime: '2024-01-15 14:10:22',
-      user: 'John Smith',
-      action: 'User Logout',
-      details: 'User logged out from session',
-      ipAddress: '192.168.1.100',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    },
-    {
-      id: 7,
-      datetime: '2024-01-15 14:05:45',
-      user: 'Sarah Johnson',
-      action: 'Report Generated',
-      details: 'Generated monthly sales report for December 2023',
-      ipAddress: '192.168.1.105',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    },
-    {
-      id: 8,
-      datetime: '2024-01-15 14:00:12',
-      user: 'Mike Chen',
-      action: 'Failed Login Attempt',
-      details: 'Failed login attempt for user: admin (invalid password)',
-      ipAddress: '192.168.1.102',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    },
-    {
-      id: 9,
-      datetime: '2024-01-15 13:55:38',
-      user: 'Emily Davis',
-      action: 'Settings Updated',
-      details: 'Updated system notification preferences',
-      ipAddress: '192.168.1.108',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    },
-    {
-      id: 10,
-      datetime: '2024-01-15 13:50:21',
-      user: 'David Wilson',
-      action: 'User Created',
-      details: 'Created new user account: test.user@pomera.com',
-      ipAddress: '192.168.1.110',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
-  ];
+  // Audit logs data is now loaded from adminService
 
   const renderAuditLog = () => (
     <div className="space-y-6">
@@ -360,79 +250,7 @@ export default function AdminPage() {
     </div>
   );
 
-  // Mock roles data
-  const roles = [
-    {
-      id: 1,
-      name: 'Super Admin',
-      description: 'Full system access with all permissions',
-      userType: 'Super Admin',
-      status: 'Active',
-      userCount: 2,
-      permissions: ['All Permissions'],
-      createdAt: '2023-01-15'
-    },
-    {
-      id: 2,
-      name: 'Pomera Admin',
-      description: 'Administrative access to Pomera systems',
-      userType: 'Pomera Admin',
-      status: 'Active',
-      userCount: 5,
-      permissions: ['User Management', 'System Settings', 'Reports'],
-      createdAt: '2023-02-01'
-    },
-    {
-      id: 3,
-      name: 'Pomera CRM',
-      description: 'Full access to CRM module and client data',
-      userType: 'Pomera CRM',
-      status: 'Active',
-      userCount: 8,
-      permissions: ['CRM Access', 'Client Management', 'Contact Management'],
-      createdAt: '2023-02-15'
-    },
-    {
-      id: 4,
-      name: 'Pomera ATS',
-      description: 'Access to Applicant Tracking System',
-      userType: 'Pomera ATS',
-      status: 'Active',
-      userCount: 6,
-      permissions: ['ATS Access', 'Job Management', 'Candidate Management'],
-      createdAt: '2023-03-01'
-    },
-    {
-      id: 5,
-      name: 'Client Admin',
-      description: 'Administrative access for client organizations',
-      userType: 'Client Admin',
-      status: 'Active',
-      userCount: 12,
-      permissions: ['Client Portal', 'User Management', 'Reports'],
-      createdAt: '2023-03-15'
-    },
-    {
-      id: 6,
-      name: 'Client Viewer',
-      description: 'Read-only access for client users',
-      userType: 'Client Viewer',
-      status: 'Active',
-      userCount: 25,
-      permissions: ['View Only', 'Basic Reports'],
-      createdAt: '2023-04-01'
-    },
-    {
-      id: 7,
-      name: 'Applicant',
-      description: 'Limited access for job applicants',
-      userType: 'Applicant',
-      status: 'Active',
-      userCount: 150,
-      permissions: ['Apply Jobs', 'View Applications'],
-      createdAt: '2023-04-15'
-    }
-  ];
+  // Roles data is now loaded from adminService
 
   const getRoleTypeColor = (userType: string) => {
     switch (userType) {
@@ -1252,6 +1070,54 @@ export default function AdminPage() {
 
   const renderHome = () => (
     <div className="space-y-6">
+      {/* System Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Building2 className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Companies</p>
+              <p className="text-2xl font-semibold text-gray-900">{systemStats.totalCompanies}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Active Companies</p>
+              <p className="text-2xl font-semibold text-gray-900">{systemStats.activeCompanies}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Users className="h-6 w-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Users</p>
+              <p className="text-2xl font-semibold text-gray-900">{systemStats.totalUsers}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Activity className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">System Uptime</p>
+              <p className="text-2xl font-semibold text-gray-900">{systemStats.systemUptime}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="px-6 py-4 border-b border-gray-200">
