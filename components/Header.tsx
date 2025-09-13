@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
@@ -21,25 +22,25 @@ const Header = () => {
         <div className="flex items-center h-16">
           {/* Logo */}
           <div className="flex items-center pl-24">
-            <a href="/" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <img 
                 src="./pomera_logo_cropped.png" 
                 alt="Pomera Care Logo" 
                 className="h-12 w-auto"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8 ml-auto">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className="text-foreground hover:text-primary transition-colors duration-200 font-medium"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <Button variant="outline" className="ml-4">
               Client Login
@@ -63,14 +64,14 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border mt-2 py-4 space-y-4">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className="block text-foreground hover:text-primary transition-colors duration-200 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <Button variant="outline" className="w-full mt-4">
               Client Login

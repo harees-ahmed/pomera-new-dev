@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
@@ -33,19 +34,19 @@ const CRMHeader = () => {
         <div className="flex items-center h-16">
           {/* Logo */}
           <div className="flex items-center pl-24">
-            <a href="/" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <img 
                 src="./pomera_logo_cropped.png" 
                 alt="Pomera Care Logo" 
                 className="h-12 w-auto"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8 ml-auto">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`py-2 px-4 rounded-lg font-medium text-sm transition-colors duration-200 ${
@@ -55,7 +56,7 @@ const CRMHeader = () => {
                 }`}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <Button variant="outline" className="ml-4">
               Logout
@@ -79,7 +80,7 @@ const CRMHeader = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border mt-2 py-4 space-y-4">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`block py-2 px-4 rounded-lg font-medium text-sm transition-colors duration-200 ${
@@ -90,7 +91,7 @@ const CRMHeader = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <Button variant="outline" className="w-full mt-4">
               Logout
