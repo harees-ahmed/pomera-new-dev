@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Pomera CRM",
   description: "Customer Relationship Management System for Pomera Care",
   icons: {
-    icon: '/pomera-favicon.svg',
+    icon: './pomera-favicon.svg',
   },
 };
 
