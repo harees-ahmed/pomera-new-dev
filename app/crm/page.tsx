@@ -68,6 +68,18 @@ export default function CRMPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Check if Supabase is properly configured
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_url_here' || supabaseKey === 'your_supabase_anon_key_here') {
+        console.warn('Supabase not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local');
+        toast.error('Database not configured. Please check your environment variables.');
+        setCompanies([]);
+        setLoading(false);
+        return;
+      }
+
       // Load companies first
       console.log('=== DEBUGGING COMPANIES LOADING ===');
       const companiesResult = await crmDatabase.getCompanies();

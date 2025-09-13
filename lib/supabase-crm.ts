@@ -116,28 +116,28 @@ async function withErrorHandling<T>(
   try {
     const data = await operation();
     return data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Enhanced error logging for debugging
     console.error(`${errorMessage}:`, {
       error: error,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-      stack: error.stack
+      message: (error as Error)?.message,
+      details: (error as any)?.details,
+      hint: (error as any)?.hint,
+      code: (error as any)?.code,
+      stack: (error as Error)?.stack
     });
     
     // Create more descriptive error messages
     let errorMsg = errorMessage;
     if (error && typeof error === 'object') {
-      if (error.message) {
-        errorMsg += `: ${error.message}`;
+      if ((error as Error)?.message) {
+        errorMsg += `: ${(error as Error).message}`;
       }
-      if (error.details) {
-        errorMsg += ` (${error.details})`;
+      if ((error as any)?.details) {
+        errorMsg += ` (${(error as any).details})`;
       }
-      if (error.hint) {
-        errorMsg += ` - Hint: ${error.hint}`;
+      if ((error as any)?.hint) {
+        errorMsg += ` - Hint: ${(error as any).hint}`;
       }
     } else if (error) {
       errorMsg += `: ${String(error)}`;
@@ -285,7 +285,7 @@ class CRMDatabase {
   }
 
   // Check table structure for debugging
-  async checkTableStructure(): Promise<any> {
+  async checkTableStructure(): Promise<{ fields: string[]; sample: any }> {
     return withErrorHandling(async () => {
       // Try a simple query to see what fields exist
       const { data: sampleData, error: sampleError } = await supabase
