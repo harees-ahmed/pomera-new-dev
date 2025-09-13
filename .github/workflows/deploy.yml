@@ -1,18 +1,19 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+
+
+
 
 jobs:
   build:
@@ -20,29 +21,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
-      - name: Setup Node.js 20+
+
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'npm'
-          
-      - name: Verify Node.js version
-        run: node --version && npm --version
-          
+
+
       - name: Install dependencies
         run: npm ci
-        
-      - name: Build
+
+      - name: Run linting
+        run: npm run lint
+        continue-on-error: true
+
+
+      - name: Build application
         run: npm run build
         env:
           NODE_ENV: production
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          
+
+
+
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        
+
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
