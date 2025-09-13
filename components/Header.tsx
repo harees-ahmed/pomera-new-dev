@@ -24,7 +24,7 @@ const Header = () => {
           <div className="flex items-center pl-24">
             <Link href="/" className="flex items-center">
               <img 
-                src="/pomera_logo_cropped.png" 
+                src="./pomera_logo_cropped.png" 
                 alt="Pomera Care Logo" 
                 className="h-12 w-auto"
               />
