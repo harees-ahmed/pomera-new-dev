@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, File, AlertCircle, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
+import { Upload, File, X, AlertCircle, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface UploadedFile {
@@ -54,7 +54,7 @@ export default function SecureFileUpload({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const validateFile = useCallback((file: File): string | null => {
+  const validateFile = (file: File): string | null => {
     // Check file size
     if (file.size > maxFileSize * 1024 * 1024) {
       return `File size exceeds ${maxFileSize}MB limit`;
@@ -75,7 +75,7 @@ export default function SecureFileUpload({
     }
 
     return null;
-  }, [maxFileSize, allowedTypes]);
+  };
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
@@ -103,7 +103,7 @@ export default function SecureFileUpload({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [onFileUpload, selectedCategory, maxFileSize, allowedTypes, validateFile]);
+  }, [onFileUpload, selectedCategory, maxFileSize, allowedTypes]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

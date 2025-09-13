@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, ChevronRight, Upload } from 'lucide-react';
 import CustomTooltip from '@/components/ui/custom-tooltip';
-import { type Company, type DimensionValue, type CompanyNote, type CompanyContact, type CompanyAddress, crmDatabase } from '@/lib/supabase-crm';
+import { type Company, type DimensionValue, crmDatabase } from '@/lib/supabase-crm';
 import { toast } from 'react-hot-toast';
 import NotesSection from './NotesSection';
 import ContactsSection from './ContactsSection';
@@ -29,12 +29,12 @@ interface CompanyModalProps {
     industries: DimensionValue[];
     documentTypes: DimensionValue[];
   };
-  notes: CompanyNote[];
-  contacts: CompanyContact[];
-  addresses: CompanyAddress[];
-  onNotesChange: (notes: CompanyNote[]) => void;
-  onContactsChange: (contacts: CompanyContact[]) => void;
-  onAddressesChange: (addresses: CompanyAddress[]) => void;
+  notes: any[];
+  contacts: any[];
+  addresses: any[];
+  onNotesChange: (notes: any[]) => void;
+  onContactsChange: (contacts: any[]) => void;
+  onAddressesChange: (addresses: any[]) => void;
   onStatusChange: (status: Company['company_status']) => void;
   saving: boolean;
 }
@@ -189,6 +189,7 @@ export default function CompanyModal({
                   onAddressesChange={onAddressesChange}
                   saving={saving}
                   isNewCompany={false}
+                  readOnly={true}
                 />
                     </div>
             )}

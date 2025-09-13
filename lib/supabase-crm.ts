@@ -116,29 +116,28 @@ async function withErrorHandling<T>(
   try {
     const data = await operation();
     return data;
-  } catch (error: unknown) {
+  } catch (error: any) {
     // Enhanced error logging for debugging
-    const errorObj = error as Record<string, unknown>;
     console.error(`${errorMessage}:`, {
       error: error,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      details: errorObj?.details,
-      hint: errorObj?.hint,
-      code: errorObj?.code,
-      stack: error instanceof Error ? error.stack : undefined
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      stack: error.stack
     });
     
     // Create more descriptive error messages
     let errorMsg = errorMessage;
     if (error && typeof error === 'object') {
-      if (errorObj.message) {
-        errorMsg += `: ${errorObj.message}`;
+      if (error.message) {
+        errorMsg += `: ${error.message}`;
       }
-      if (errorObj.details) {
-        errorMsg += ` (${errorObj.details})`;
+      if (error.details) {
+        errorMsg += ` (${error.details})`;
       }
-      if (errorObj.hint) {
-        errorMsg += ` - Hint: ${errorObj.hint}`;
+      if (error.hint) {
+        errorMsg += ` - Hint: ${error.hint}`;
       }
     } else if (error) {
       errorMsg += `: ${String(error)}`;
@@ -153,8 +152,8 @@ class CRMDatabase {
   // ==================== DIMENSION MANAGEMENT ====================
   
   async getDimensions(tableName: string) {
-    try {
-      console.log(`=== FETCHING DIMENSIONS FROM ${tableName} ===`);
+    return withErrorHandling(async () => {
+      console.log(`Fetching dimensions from table: ${tableName}`);
       
       const { data, error } = await supabase
         .from(tableName)
@@ -254,10 +253,7 @@ class CRMDatabase {
       
       console.log(`Final mapped data for ${tableName}:`, mappedData);
       return mappedData;
-    } catch (error) {
-      console.error(`Error fetching dimensions from ${tableName}:`, error);
-      throw error;
-    }
+    }, `Failed to fetch dimensions from ${tableName}`);
   }
 
   async getCompanyStatuses() {
@@ -289,7 +285,7 @@ class CRMDatabase {
   }
 
   // Check table structure for debugging
-  async checkTableStructure(): Promise<{ fields: string[]; sample: Record<string, unknown> | null }> {
+  async checkTableStructure(): Promise<any> {
     return withErrorHandling(async () => {
       // Try a simple query to see what fields exist
       const { data: sampleData, error: sampleError } = await supabase
@@ -341,11 +337,7 @@ class CRMDatabase {
     limit?: number;
     offset?: number;
   }) {
-    try {
-      console.log('=== GET COMPANIES DEBUG ===');
-      console.log('Supabase client:', supabase);
-      console.log('Filters:', filters);
-      
+    return withErrorHandling(async () => {
       // Use the view if it exists, otherwise use the table
       let query = supabase
         .from('companies')
@@ -368,22 +360,11 @@ class CRMDatabase {
         query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
       }
 
-      console.log('Executing query...');
       const { data, error } = await query;
       
-      console.log('Query result:', { data, error });
-      
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Returning data:', data);
+      if (error) throw error;
       return data as Company[];
-    } catch (error) {
-      console.error('Error in getCompanies:', error);
-      throw error;
-    }
+    }, 'Failed to fetch companies');
   }
 
   async getCompanyById(companyId: string) {
@@ -414,10 +395,10 @@ class CRMDatabase {
         company.company_status = 'lead';
       }
       
-      // Clean up empty date fields - convert empty strings to undefined
+      // Clean up empty date fields - convert empty strings to null
       const cleanedCompany = { ...company };
       if (cleanedCompany.expected_close_date === '') {
-        cleanedCompany.expected_close_date = undefined;
+        cleanedCompany.expected_close_date = null;
       }
       
       // Add timestamps
@@ -658,7 +639,8 @@ class CRMDatabase {
           note_type: note.type,
           note_type_id: noteType.id,
           note_text: note.text,
-          follow_up_date: note.follow_up_date || undefined,
+          follow_up_date: note.follow_up_date || null,
+          follow_up_type: note.follow_up_type || null,
           created_date: new Date().toISOString()
         };
       } else {

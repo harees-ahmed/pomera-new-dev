@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
-import { crmDatabase, type DimensionValue, type CompanyNote } from '@/lib/supabase-crm';
+import { crmDatabase, type DimensionValue } from '@/lib/supabase-crm';
 import { toast } from 'react-hot-toast';
 
 interface NotesSectionProps {
   companyId: string;
-  notes: CompanyNote[];
+  notes: any[];
   noteTypes: DimensionValue[];
   contactMethods: DimensionValue[];
-  onNotesChange: (notes: CompanyNote[]) => void;
+  onNotesChange: (notes: any[]) => void;
   saving: boolean;
   readOnly?: boolean;
   onNoteSaved?: () => void;
@@ -42,7 +42,7 @@ export default function NotesSection({
     }
 
     // Validate follow-up date is not in the past
-    if (newNote.followUpDate && new Date(newNote.followUpDate) < new Date(new Date().setHours(0, 0, 0, 0))) {
+    if (newNote.followUpDate && new Date(newNote.followUpDate) < new Date().setHours(0, 0, 0, 0)) {
       toast.error('Follow-up date cannot be in the past');
       return;
     }
@@ -52,8 +52,8 @@ export default function NotesSection({
         company_id: companyId,
         type: newNote.type,
         text: newNote.text,
-        follow_up_date: newNote.followUpDate || undefined,
-        follow_up_type: newNote.followUpType || undefined
+        follow_up_date: newNote.followUpDate || null,
+        follow_up_type: newNote.followUpType || null
       });
       
       onNotesChange([...notes, newNoteData]);
@@ -72,7 +72,7 @@ export default function NotesSection({
     }
   };
 
-  const handleDeleteNote = async (note: CompanyNote, index: number) => {
+  const handleDeleteNote = async (note: any, index: number) => {
     if (confirm('Are you sure you want to delete this note?')) {
       try {
         if (note.note_id) {
@@ -163,7 +163,7 @@ export default function NotesSection({
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-700">{note.note_type}</span>
+                    <span className="text-sm font-medium text-gray-700">{note.note_type || note.type}</span>
                     {note.follow_up_date && (
                       <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                         Follow-up: {new Date(note.follow_up_date).toLocaleDateString()}
@@ -171,9 +171,9 @@ export default function NotesSection({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm mt-1">{note.note_text}</p>
+                  <p className="text-sm mt-1">{note.note_text || note.text}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {new Date(note.created_date).toLocaleString()}
+                    {new Date(note.created_date || note.date).toLocaleString()}
                   </p>
                 </div>
                 {!readOnly && (
