@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { getAssetUrl } from '@/lib/base-url';
 
 const CRMHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,7 +37,7 @@ const CRMHeader = () => {
           <div className="flex items-center pl-24">
             <Link href="/" className="flex items-center">
               <img 
-                src="./pomera_logo_cropped.png" 
+                src={getAssetUrl("/pomera_logo_cropped.png")} 
                 alt="Pomera Care Logo" 
                 className="h-12 w-auto"
               />

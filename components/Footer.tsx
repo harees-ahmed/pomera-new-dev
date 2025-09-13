@@ -1,4 +1,5 @@
 import { Mail, Phone, MessageCircle, Linkedin } from 'lucide-react';
+import { getRouteUrl } from '@/lib/base-url';
 
 const Footer = () => {
   const whatsappNumber = "13053313528";
@@ -65,7 +66,7 @@ const Footer = () => {
 
             {/* Terms Link */}
             <a 
-              href="./terms"
+              href={getRouteUrl("/terms")}
               className="flex items-center gap-2 p-3 rounded-lg border border-muted/30 hover:bg-muted/10 hover:border-muted/50 transition-all group text-sm"
             >
               <span className="text-foreground group-hover:text-primary transition-colors">

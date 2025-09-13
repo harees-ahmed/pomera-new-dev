@@ -2,6 +2,7 @@ import { Mail, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getAssetUrl } from '@/lib/base-url';
 
 export default function HomePage() {
   const whatsappNumber = "13053313528";
@@ -16,7 +17,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center max-w-6xl mx-auto">
             <div className="flex items-center space-x-8">
               <img 
-                src="./lovable-uploads/86aabeb5-c86b-4e8e-8ea7-239349c6cae2.png" 
+                src={getAssetUrl("/lovable-uploads/86aabeb5-c86b-4e8e-8ea7-239349c6cae2.png")} 
                 alt="Healthcare Consulting Logo" 
                 className="h-64 w-auto"
               />
@@ -35,7 +36,7 @@ export default function HomePage() {
         {/* Section Break Image */}
         <div className="w-full py-0">
           <img 
-            src="./lovable-uploads/a9eedb62-09ce-4fdc-9455-e5baa278633c.png" 
+            src={getAssetUrl("/lovable-uploads/a9eedb62-09ce-4fdc-9455-e5baa278633c.png")} 
             alt="Healthcare professionals" 
             className="w-full h-64 object-cover"
           />
@@ -54,7 +55,7 @@ export default function HomePage() {
         {/* Section Break Image 2 */}
         <div className="w-full py-1">
           <img 
-            src="./lovable-uploads/ce4260ac-1d43-40cb-9e86-14dfb5fc5d5a.png" 
+            src={getAssetUrl("/lovable-uploads/ce4260ac-1d43-40cb-9e86-14dfb5fc5d5a.png")} 
             alt="Medical team in hospital" 
             className="w-full h-64 object-cover opacity-70"
           />
