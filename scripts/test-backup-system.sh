@@ -256,7 +256,7 @@ main() {
         echo -e "${RED}Some tests failed. Please fix the issues before using the backup system.${NC}"
         echo ""
         echo "Common fixes:"
-        echo "1. Install Supabase CLI: npm install -g supabase@latest"
+        echo "1. Install Supabase CLI: curl -fsSL https://supabase.com/install.sh | sh"
         echo "2. Set environment variables: export SUPABASE_DB_URL=... && export SUPABASE_ACCESS_TOKEN=..."
         echo "3. Make scripts executable: chmod +x scripts/*.sh"
         exit 1

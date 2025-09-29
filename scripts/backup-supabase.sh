@@ -58,7 +58,12 @@ create_backup_dir() {
 install_supabase_cli() {
     if ! command -v supabase &> /dev/null; then
         log "Installing Supabase CLI..."
-        npm install -g supabase@latest
+        # Use the official installation method
+        curl -fsSL https://supabase.com/install.sh | sh
+        # Add to PATH if not already there
+        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+            export PATH="$HOME/.local/bin:$PATH"
+        fi
     else
         log "Supabase CLI already installed"
     fi

@@ -94,8 +94,8 @@ You can trigger the backup manually:
 
 ### Prerequisites
 
-1. **Node.js** (version 20 or higher)
-2. **Supabase CLI** (will be installed automatically)
+1. **Node.js** (version 20 or higher) - for GitHub Actions
+2. **Supabase CLI** (will be installed automatically using official method)
 3. **Environment variables** set
 
 ### Environment Variables
@@ -219,6 +219,12 @@ Each backup includes:
    - Verify AWS credentials if using S3
    - Check S3 bucket permissions
    - Ensure sufficient disk space locally
+
+5. **Supabase CLI Installation Errors**
+   - Use the official installation method: `curl -fsSL https://supabase.com/install.sh | sh`
+   - Do not use `npm install -g supabase@latest` as it's not supported
+   - Ensure the CLI is in your PATH: `export PATH="$HOME/.local/bin:$PATH"`
+   - For Windows, use WSL or Git Bash for installation
 
 ### Debug Mode
 

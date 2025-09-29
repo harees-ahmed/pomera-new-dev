@@ -279,7 +279,7 @@ function Start-TestSuite {
         Write-Host "Some tests failed. Please fix the issues before using the backup system." -ForegroundColor Red
         Write-Host ""
         Write-Host "Common fixes:" -ForegroundColor Yellow
-        Write-Host "1. Install Supabase CLI: npm install -g supabase@latest" -ForegroundColor White
+        Write-Host "1. Install Supabase CLI: curl -fsSL https://supabase.com/install.sh | sh" -ForegroundColor White
         Write-Host "2. Set environment variables: `$env:SUPABASE_DB_URL=... ; `$env:SUPABASE_ACCESS_TOKEN=..." -ForegroundColor White
         Write-Host "3. Ensure all script files exist in the scripts directory" -ForegroundColor White
         exit 1

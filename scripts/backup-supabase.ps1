@@ -89,9 +89,29 @@ function Install-SupabaseCLI {
         }
     } catch {
         Write-Log "Installing Supabase CLI..."
-        npm install -g supabase@latest
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error-Log "Failed to install Supabase CLI"
+        # For Windows, we'll use npm with --force flag or suggest manual installation
+        try {
+            npm install -g supabase@latest --force
+            if ($LASTEXITCODE -ne 0) {
+                throw "npm installation failed"
+            }
+        } catch {
+            Write-Log "npm installation failed, trying alternative method..."
+            # Alternative: Download and install manually
+            $installScript = "https://supabase.com/install.sh"
+            $tempScript = "$env:TEMP\supabase-install.sh"
+            
+            try {
+                Invoke-WebRequest -Uri $installScript -OutFile $tempScript
+                # Note: This requires WSL or Git Bash on Windows
+                Write-Log "Please install Supabase CLI manually: https://supabase.com/docs/guides/cli/getting-started"
+                Write-Log "Or use WSL/Git Bash to run: curl -fsSL https://supabase.com/install.sh | sh"
+                throw "Manual installation required"
+            } catch {
+                Write-Log "Failed to install Supabase CLI automatically"
+                Write-Log "Please install manually: https://supabase.com/docs/guides/cli/getting-started"
+                throw "Supabase CLI installation failed"
+            }
         }
     }
 }
