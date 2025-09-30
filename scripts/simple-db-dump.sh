@@ -155,6 +155,7 @@ main() {
     export_data
     
     create_archive
+    upload_to_github
     generate_report
     
     log "Backup process completed successfully!"

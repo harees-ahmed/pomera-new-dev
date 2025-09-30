@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local backup files (GitHub Actions will commit backups to repository)
+backup_*.log

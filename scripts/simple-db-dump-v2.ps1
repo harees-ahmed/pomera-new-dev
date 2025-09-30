@@ -116,6 +116,41 @@ if ((Test-Path $archiveFile) -and ((Get-Item $archiveFile).Length -gt 0)) {
     exit 1
 }
 
+# Upload backup to GitHub repository
+Write-Log "Uploading backup to GitHub repository..."
+
+# Configure git if not already configured
+git config --global user.name "GitHub Actions" 2>$null
+git config --global user.email "actions@github.com" 2>$null
+
+# Create backups directory in repository if it doesn't exist
+if (-not (Test-Path "backups")) {
+    New-Item -ItemType Directory -Path "backups" -Force | Out-Null
+}
+
+# Copy backup files to repository backups directory
+Copy-Item "$BackupDir\*.sql" "backups\" -Force -ErrorAction SilentlyContinue
+Copy-Item "$BackupDir\*.zip" "backups\" -Force -ErrorAction SilentlyContinue
+
+# Add and commit backup files
+git add backups/ 2>$null
+git commit -m "Add database backup - $Timestamp" 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Log "Backup files committed to git"
+} else {
+    Write-Log "No changes to commit or already committed"
+}
+
+# Push to main branch
+git push origin main 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Log "Backup pushed to GitHub successfully"
+} else {
+    Write-Log "Failed to push to GitHub (this is normal in non-GitHub Actions environment)"
+}
+
+Write-Log "Backup upload process completed"
+
 # Display summary
 Write-Host ""
 Write-Host "=== BACKUP SUMMARY ===" -ForegroundColor Green
