@@ -1,0 +1,44 @@
+name: Simple Supabase Database Backup
+
+on:
+  schedule:
+    # Run daily at 2:00 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Run simple backup script
+        run: |
+          chmod +x scripts/simple-db-dump.sh
+          ./scripts/simple-db-dump.sh
+
+      - name: Upload backup artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_number }}
+          path: backups/
+          retention-days: 30
+
+      - name: Backup summary
+        run: |
+          echo "Backup completed successfully!"
+          echo "Files created:"
+          ls -la backups/
+          echo "Backup size:"
+          du -sh backups/
