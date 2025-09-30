@@ -116,6 +116,32 @@ create_archive() {
     fi
 }
 
+# Upload backup to GitHub repository
+upload_to_github() {
+    log "Uploading backup to GitHub repository..."
+    
+    # Configure git if not already configured
+    git config --global user.name "GitHub Actions" || true
+    git config --global user.email "actions@github.com" || true
+    
+    # Create backups directory in repository if it doesn't exist
+    mkdir -p backups
+    
+    # Copy backup files to repository backups directory
+    cp "$BACKUP_DIR"/*.sql backups/ 2>/dev/null || true
+    cp "$BACKUP_DIR"/*.tar.gz backups/ 2>/dev/null || true
+    cp "$LOG_FILE" backups/ 2>/dev/null || true
+    
+    # Add and commit backup files
+    git add backups/
+    git commit -m "Add database backup - $TIMESTAMP" || log "No changes to commit or already committed"
+    
+    # Push to main branch
+    git push origin main || log "Failed to push to GitHub (this is normal in non-GitHub Actions environment)"
+    
+    log "Backup upload process completed"
+}
+
 # Generate backup report
 generate_report() {
     local report_file="$BACKUP_DIR/backup_report_${TIMESTAMP}.txt"
