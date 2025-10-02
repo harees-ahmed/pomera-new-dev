@@ -7,7 +7,9 @@
 const getBasePath = () => {
   // In production with GitHub Pages, this will be '/pomera-new-dev'
   // In development, this will be empty string
-  return process.env.NODE_ENV === 'production' ? '/pomera-new-dev' : '';
+  return process.env.NODE_ENV === "production"
+    ? "/pomera-new-dev"
+    : "/pomera-new-dev";
 };
 
 /**
@@ -17,10 +19,12 @@ const getBasePath = () => {
  */
 export const getAssetUrl = (path: string): string => {
   const basePath = getBasePath();
-  
+
   // Ensure path starts with '/'
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  console.log("basePath", basePath);
+
   return `${basePath}${normalizedPath}`;
 };
 
@@ -31,10 +35,10 @@ export const getAssetUrl = (path: string): string => {
  */
 export const getRouteUrl = (path: string): string => {
   const basePath = getBasePath();
-  
+
   // Ensure path starts with '/'
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
   return `${basePath}${normalizedPath}`;
 };
 
