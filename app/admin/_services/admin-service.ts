@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase } from "../../../lib/supabase";
 
 export interface AdminUser {
   id: string;
@@ -9,7 +9,6 @@ export interface AdminUser {
   status: string;
   lastLogin: string | null;
   createdAt: string;
-  avatar: string | null;
 }
 
 export interface AdminRole {
@@ -36,52 +35,26 @@ export interface AuditLog {
 class AdminService {
   async getUsers(): Promise<AdminUser[]> {
     try {
-      const { data: profiles, error } = await supabase
-        .from("user_profiles")
-        .select("*")
+      const { data: usersProfile } = await supabase
+        .from("user_user")
+        .select("*, user_roles(key,name)")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching users:", error);
-        // Fallback to mock data if table doesn't exist yet
-        return [
-          {
-            id: "1",
-            name: "John Smith",
-            email: "john.smith@pomera.com",
-            userType: "Internal",
-            role: "Admin",
-            status: "Active",
-            lastLogin: "2024-01-15 10:30",
-            createdAt: "2023-06-15",
-            avatar: null,
-          },
-          {
-            id: "2",
-            name: "Sarah Johnson",
-            email: "sarah.johnson@pomera.com",
-            userType: "Internal",
-            role: "Manager",
-            status: "Active",
-            lastLogin: "2024-01-14 16:45",
-            createdAt: "2023-08-22",
-            avatar: null,
-          },
-        ];
+      if (!usersProfile?.length) {
+        return [];
       }
 
-      return profiles.map((profile) => ({
+      return usersProfile.map((profile) => ({
         id: profile.id,
-        name: profile.full_name || "Unknown User",
+        name: profile.first_name + " " + profile.last_name || "Unknown User",
         email: profile.email,
-        userType: profile.user_type || "Internal",
-        role: profile.role || "User",
-        status: profile.status === "active" ? "Active" : "Inactive",
+        userType: profile.user_type === "I" ? "Internal" : "External",
+        role: profile.user_roles.name || "User",
+        status: profile.status === "A" ? "Active" : "Inactive",
         lastLogin: profile.last_login
           ? new Date(profile.last_login).toLocaleString()
           : null,
         createdAt: new Date(profile.created_at).toLocaleDateString(),
-        avatar: profile.avatar_url,
       }));
     } catch (error) {
       console.error("Error fetching users:", error);

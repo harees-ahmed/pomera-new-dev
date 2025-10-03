@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/app/admin/_provider/auth-context";
 import LoginForm from "./LoginForm";
 import { Loader2 } from "lucide-react";
 

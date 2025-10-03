@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/app/admin/_provider/auth-context";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface LoginFormData {

@@ -1,30 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
-import { getAssetUrl } from '@/lib/base-url';
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { getAssetUrl } from "@/lib/base-url";
+import { useAuth } from "@/app/admin/_provider/auth-context";
 
 const CRMHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { signOut } = useAuth();
 
   const navItems = [
-    { label: 'Client (CRM)', href: '/crm' },
-    { label: 'ATS', href: '/ats' },
-    { label: 'Pomera Admin', href: '/admin' },
+    { label: "Client (CRM)", href: "/crm" },
+    { label: "ATS", href: "/ats" },
+    { label: "Pomera Admin", href: "/admin" },
   ];
 
   // Function to check if a nav item is active
   const isActive = (href: string) => {
-    if (href === '/crm') {
-      return pathname === '/crm';
-    } else if (href === '/ats') {
-      return pathname === '/ats' || pathname.startsWith('/ats/');
-    } else if (href === '/admin') {
-      return pathname === '/admin' || pathname.startsWith('/admin/');
+    if (href === "/crm") {
+      return pathname === "/crm";
+    } else if (href === "/ats") {
+      return pathname === "/ats" || pathname.startsWith("/ats/");
+    } else if (href === "/admin") {
+      return pathname === "/admin" || pathname.startsWith("/admin/");
     }
     return false;
   };
@@ -36,9 +38,9 @@ const CRMHeader = () => {
           {/* Logo */}
           <div className="flex items-center pl-24">
             <Link href="/" className="flex items-center">
-              <img 
-                src={getAssetUrl("/pomera_logo_cropped.png")} 
-                alt="Pomera Care Logo" 
+              <img
+                src={getAssetUrl("/pomera_logo_cropped.png")}
+                alt="Pomera Care Logo"
                 className="h-12 w-auto"
               />
             </Link>
@@ -52,14 +54,14 @@ const CRMHeader = () => {
                 href={item.href}
                 className={`py-2 px-4 rounded-lg font-medium text-sm transition-colors duration-200 ${
                   isActive(item.href)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:text-primary hover:bg-gray-100'
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:text-primary hover:bg-gray-100"
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-            <Button variant="outline" className="ml-4">
+            <Button variant="outline" className="ml-4" onClick={signOut}>
               Logout
             </Button>
           </nav>
@@ -86,8 +88,8 @@ const CRMHeader = () => {
                 href={item.href}
                 className={`block py-2 px-4 rounded-lg font-medium text-sm transition-colors duration-200 ${
                   isActive(item.href)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:text-primary hover:bg-gray-100'
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:text-primary hover:bg-gray-100"
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CRMHeader from "@/components/CRMHeader";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { CRMHeader } from "@/app/admin/_components";
+import ProtectedRoute from "@/app/admin/_components/ProtectedRoute";
 import {
   adminService,
   type AdminUser,
   type AdminRole,
   type AuditLog,
-} from "@/lib/admin-service";
+} from "@/app/admin/_services/admin-service";
 import {
   Users,
   Settings,
@@ -34,7 +34,10 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  MonitorCog,
 } from "lucide-react";
+import { CRM } from "./_pages";
+import { CRMProvider } from "./_provider/crm-context";
 
 export default function AdminPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -102,6 +105,7 @@ export default function AdminPage() {
     { id: "reports", label: "Reports", icon: FileText },
     { id: "audit-log", label: "Audit Log", icon: Activity },
     { id: "database", label: "Manage Database", icon: Database },
+    { id: "crm", label: "CRM Management", icon: MonitorCog },
   ];
 
   // Users data is now loaded from adminService
@@ -686,7 +690,6 @@ export default function AdminPage() {
     });
 
     // Update the data (in a real app, this would be an API call)
-    console.log("Reordered data:", newData);
     setDraggedItem(null);
   };
 
@@ -1490,6 +1493,12 @@ export default function AdminPage() {
         return renderAuditLog();
       case "database":
         return renderManageDatabase();
+      case "crm":
+        return (
+          <CRMProvider>
+            <CRM />
+          </CRMProvider>
+        );
       default:
         return (
           <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
@@ -1508,13 +1517,6 @@ export default function AdminPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 relative">
-        {/* Demo Watermark */}
-        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-          <div className="text-red-500 text-8xl font-bold opacity-10 transform -rotate-12 select-none">
-            DEMO ONLY
-          </div>
-        </div>
-
         <CRMHeader />
         <div className="flex">
           {/* Sidebar */}
