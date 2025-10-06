@@ -23,8 +23,6 @@ export const getAssetUrl = (path: string): string => {
   // Ensure path starts with '/'
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
-  console.log("basePath", basePath);
-
   return `${basePath}${normalizedPath}`;
 };
 

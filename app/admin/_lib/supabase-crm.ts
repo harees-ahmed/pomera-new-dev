@@ -153,7 +153,7 @@ class CRMDatabase {
 
   async getDimensions(tableName: string) {
     return withErrorHandling(async () => {
-      console.log(`Fetching dimensions from table: ${tableName}`);
+      // console.log(`Fetching dimensions from table: ${tableName}`);
 
       const { data, error } = await supabase
         .from(tableName)
@@ -161,7 +161,7 @@ class CRMDatabase {
         .eq("is_active", true)
         .order("display_order");
 
-      console.log(`Supabase response for ${tableName}:`, { data, error });
+      // console.log(`Supabase response for ${tableName}:`, { data, error });
 
       if (error) {
         console.error(`Supabase error for ${tableName}:`, error);
@@ -169,11 +169,11 @@ class CRMDatabase {
       }
 
       if (!data || data.length === 0) {
-        console.log(`No data returned for ${tableName}`);
+        // console.log(`No data returned for ${tableName}`);
         return [];
       }
 
-      console.log(`Raw data for ${tableName}:`, data);
+      // console.log(`Raw data for ${tableName}:`, data);
 
       // Map to consistent format based on table name
       const mappedData = (data || []).map((item) => {
@@ -247,11 +247,11 @@ class CRMDatabase {
           color: item.score_color || item.color,
         };
 
-        console.log(`Mapped item for ${tableName}:`, mappedItem);
+        // console.log(`Mapped item for ${tableName}:`, mappedItem);
         return mappedItem;
       }) as DimensionValue[];
 
-      console.log(`Final mapped data for ${tableName}:`, mappedData);
+      // console.log(`Final mapped data for ${tableName}:`, mappedData);
       return mappedData;
     }, `Failed to fetch dimensions from ${tableName}`);
   }
@@ -386,7 +386,7 @@ class CRMDatabase {
   async createCompany(company: Partial<Company>) {
     return withErrorHandling(async () => {
       // Log the data being sent for debugging
-      console.log("Creating company with data:", company);
+      // console.log("Creating company with data:", company);
 
       // Validate required fields
       if (!company.company_name) {
@@ -412,7 +412,7 @@ class CRMDatabase {
         updated_date: now,
       };
 
-      console.log("Final company data to insert:", companyData);
+      // console.log("Final company data to insert:", companyData);
 
       try {
         const { data, error } = await supabase
@@ -434,7 +434,7 @@ class CRMDatabase {
           );
         }
 
-        console.log("Company created successfully:", data);
+        // console.log("Company created successfully:", data);
         return data as Company;
       } catch (error) {
         console.error("Exception during company creation:", error);
