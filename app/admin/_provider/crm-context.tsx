@@ -41,13 +41,17 @@ export function CRMProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const fetchCompanyManagement = async () => {
-      const result = await crmDatabase.getCompanyManagement();
-      console.log(result);
-      setCompanyManagement(result);
-    };
     fetchCompanyManagement();
   }, []);
+
+  const fetchCompanyManagement = async () => {
+    try {
+      const result = await crmDatabase.getCompanyManagement();
+      setCompanyManagement(result);
+    } catch (error) {
+      console.error("Error fetching company management:", error);
+    }
+  };
 
   return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;
 }

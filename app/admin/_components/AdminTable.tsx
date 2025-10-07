@@ -28,13 +28,13 @@ export default function AdminTable({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
         <thead className="bg-gray-50">
           <tr>
             {columns.map((column, idx) => (
               <th
                 key={column.key + idx}
-                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 capitalize tracking-wider ${
                   column.className || ""
                 }`}
               >
