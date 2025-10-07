@@ -8,16 +8,23 @@ import {
   ReactNode,
 } from "react";
 import { crmDatabase } from "../_lib";
-import { CompanyManagement } from "../_lib/supabase-crm";
+import {
+  CompanyManagement,
+  CompanyField,
+  FieldType,
+} from "../_lib/supabase-crm";
 
 interface CRMContextType {
   state: {
     loading: boolean;
     companyManagement: CompanyManagement[];
+    fieldTypes: FieldType[];
   };
   actions: {
     setLoading: (loading: boolean) => void;
     setCompanyManagement: (companyManagement: CompanyManagement[]) => void;
+    addCompanyFields: (companyFields: CompanyField) => void;
+    deleteCompanyField: (fieldId: string) => void;
   };
 }
 
@@ -28,21 +35,20 @@ export function CRMProvider({ children }: { children: ReactNode }) {
   const [companyManagement, setCompanyManagement] = useState<
     CompanyManagement[]
   >([]);
-
-  const value: CRMContextType = {
-    state: {
-      loading,
-      companyManagement,
-    },
-    actions: {
-      setLoading,
-      setCompanyManagement,
-    },
-  };
+  const [fieldTypes, setFieldTypes] = useState<FieldType[]>([]);
 
   useEffect(() => {
-    fetchCompanyManagement();
+    Promise.all([fetchFieldTypes(), fetchCompanyManagement()]);
   }, []);
+
+  const fetchFieldTypes = async () => {
+    try {
+      const result = await crmDatabase.getFieldTypes();
+      setFieldTypes(result);
+    } catch (error) {
+      console.error("Error fetching field types:", error);
+    }
+  };
 
   const fetchCompanyManagement = async () => {
     try {
@@ -51,6 +57,44 @@ export function CRMProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error fetching company management:", error);
     }
+  };
+
+  const deleteCompanyField = async (fieldId: string) => {
+    try {
+      setLoading(true);
+      await crmDatabase.deleteCompanyField(fieldId);
+      await fetchCompanyManagement();
+    } catch (error) {
+      console.error("Error deleting company management:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addCompanyFields = async (companyFields: CompanyField) => {
+    try {
+      setLoading(true);
+      await crmDatabase.addCompanyField(companyFields);
+      await fetchCompanyManagement();
+    } catch (error) {
+      console.error("Error adding company management:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const value: CRMContextType = {
+    state: {
+      loading,
+      companyManagement,
+      fieldTypes,
+    },
+    actions: {
+      setLoading,
+      setCompanyManagement,
+      addCompanyFields,
+      deleteCompanyField,
+    },
   };
 
   return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;

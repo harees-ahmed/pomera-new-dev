@@ -5,6 +5,9 @@ import CompanyForm from "./CompanyManagement";
 import ContactsSection from "./ContactsSection";
 import AddressesSection from "./AddressesSection";
 import AdminTable from "./AdminTable";
+import ViewModal from "./ViewModal";
+import AddOrEditCompany from "./AddOrEditCompany";
+import DeleteCompany from "./DeleteCompany";
 
 export {
   CRMHeader,
@@ -14,4 +17,7 @@ export {
   ContactsSection,
   AddressesSection,
   AdminTable,
+  ViewModal,
+  AddOrEditCompany,
+  DeleteCompany,
 };

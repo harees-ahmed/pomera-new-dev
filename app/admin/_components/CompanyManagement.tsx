@@ -1,16 +1,20 @@
 "use client";
 import React from "react";
+import { Trash2, Edit, Eye, Plus } from "lucide-react";
 import { CompanyManagement } from "../_lib/supabase-crm";
-import { AdminTable } from ".";
-import EditFieldModal from "./EditFieldModal";
-import { Trash2, Edit } from "lucide-react";
+import { AdminTable, ViewModal, AddOrEditCompany, DeleteCompany } from ".";
+import { useCRM } from "../_provider/crm-context";
+
 export default function CompanyForm({
   state,
 }: {
   state: { companyManagement: CompanyManagement[] };
 }) {
+  const { actions } = useCRM();
   const [open, setOpen] = React.useState(false);
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
   const colName: {
     key: string;
     label: string;
@@ -21,10 +25,28 @@ export default function CompanyForm({
     (m) => m.is_edit || m.is_delete
   );
 
-  const onAction = (action?: "edit" | "delete", row?: any) => {
+  const onAction = (
+    action?: "edit" | "delete" | "viewValues" | "add",
+    row?: any
+  ) => {
     if (action === "edit" && row) {
       setActiveRow(row);
+      setEditOpen(true);
+    }
+
+    if (action === "viewValues" && row) {
+      setActiveRow(row);
       setOpen(true);
+    }
+
+    if (action === "delete" && row) {
+      setActiveRow(row);
+      setDeleteOpen(true);
+    }
+
+    if (action === "add") {
+      setActiveRow(null); // No row for add mode
+      setEditOpen(true);
     }
   };
 
@@ -34,7 +56,8 @@ export default function CompanyForm({
       key === "created_at" ||
       key === "dim_field_types" ||
       key === "is_delete" ||
-      key === "is_edit"
+      key === "is_edit" ||
+      key === "dropdown_values"
     )
       return;
 
@@ -42,6 +65,25 @@ export default function CompanyForm({
       key: key,
       label: key.replace("_", " "),
     });
+  });
+
+  colName.push({
+    key: "values",
+    label: "Values",
+    render: (_value: any, row: any) => {
+      if (row.field_type === "dropdown") {
+        return (
+          <button
+            type="button"
+            className="text-blue-600 hover:text-blue-800 text-sm"
+            onClick={() => onAction("viewValues", row)}
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+        );
+      }
+      return "-";
+    },
   });
 
   if (hasActions) {
@@ -73,29 +115,41 @@ export default function CompanyForm({
     } as any);
   }
 
-  const data = state.companyManagement.map((management) => {
+  const data = state.companyManagement.map((management: CompanyManagement) => {
     const {
+      id,
       dim_field_types: { field_type },
-      dim_ref,
       field_name,
       is_delete,
       is_edit,
       is_mandatory,
+      dropdown_values,
     } = management;
 
     return {
+      id,
       field_type: field_type,
-      dim_ref: dim_ref || "Null",
       field_name,
       is_delete,
       is_edit,
       is_mandatory: is_mandatory ? "Yes" : "No",
+      dropdown_values,
     };
   });
 
   return (
     <div className="bg-white">
-      <h3 className="text-lg font-semibold mb-4">{"Company Management"}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Company Management</h3>
+        <button
+          type="button"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={() => onAction("add")}
+        >
+          <Plus className="h-4 w-4" />
+          Add Field
+        </button>
+      </div>
 
       <AdminTable
         columns={colName}
@@ -103,10 +157,23 @@ export default function CompanyForm({
         className="mb-6"
         emptyMessage="No companies found"
       />
-      <EditFieldModal
-        open={open}
-        onClose={() => setOpen(false)}
+      <ViewModal open={open} onClose={() => setOpen(false)} row={activeRow} />
+
+      <AddOrEditCompany
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
         row={activeRow}
+      />
+
+      <DeleteCompany
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        row={activeRow}
+        onConfirm={() => {
+          console.log("Delete confirmed for:", activeRow);
+          setDeleteOpen(false);
+          actions.deleteCompanyField(activeRow.id);
+        }}
       />
     </div>
   );

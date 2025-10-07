@@ -8,13 +8,44 @@ export interface CompanyManagement {
   field_name: string;
   is_mandatory: boolean;
   field_type: string;
-  dim_ref: string;
   is_edit: boolean;
   is_delete: boolean;
   dim_field_types: {
     field_type: string;
   };
+  dropdown_values?: Array<{
+    display_name: string;
+    display_order: number;
+    is_active: boolean;
+  }>;
 }
+
+export interface CompanyField {
+  id?: string;
+  field_name: string;
+  is_mandatory: boolean;
+  field_type: string;
+  field_type_id: string;
+  dropdown_values?: Array<{
+    display_name: string;
+    display_order: number;
+    is_active: boolean;
+  }>;
+  is_edit: boolean;
+  is_delete: boolean;
+}
+
+export interface FieldType {
+  id: string;
+  field_type: string;
+}
+
+export interface DimensionTable {
+  table_name: string;
+  display_name: string;
+  is_active: boolean;
+}
+
 // Dimension Types
 export interface DimensionValue {
   id: number;
@@ -69,12 +100,54 @@ class CRMDatabase {
     return withErrorHandling(async () => {
       const { data, error } = await supabase
         .from("company_management")
-        .select("*, dim_field_types(field_type)");
+        .select("*, dim_field_types(field_type), dropdown_values");
 
       if (error) throw error;
       return data as CompanyManagement[];
     }, "Failed to fetch company management");
   }
+  async addCompanyField(companyManagement: CompanyField) {
+    return withErrorHandling(async () => {
+      const { error } = await supabase
+        .from("company_management")
+        .insert([companyManagement]);
+
+      if (error) throw error;
+      return true;
+    }, "Failed to add company field");
+  }
+
+  async getFieldTypes() {
+    return withErrorHandling(async () => {
+      const { data, error } = await supabase
+        .from("dim_field_types")
+        .select("*");
+      if (error) throw error;
+      return data as FieldType[];
+    }, "Failed to fetch field types");
+  }
+
+  async deleteCompanyField(fieldId: string) {
+    return withErrorHandling(async () => {
+      const { error } = await supabase
+        .from("company_management")
+        .delete()
+        .eq("id", fieldId);
+
+      if (error) throw error;
+      return true;
+    }, "Failed to delete company field");
+  }
+
+  // async updateCompanyField(companyManagement: CompanyManagement) {
+  //   return withErrorHandling(async () => {
+  //     const { data, error } = await supabase
+  //       .from("company_management")
+  //       .update(companyManagement);
+  //     if (error) throw error;
+  //     return data as CompanyManagement;
+  //   }, "Failed to update company field");
+  // }
 }
 
 export const crmDatabase = new CRMDatabase();
