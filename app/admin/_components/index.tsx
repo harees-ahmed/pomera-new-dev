@@ -8,6 +8,7 @@ import AdminTable from "./AdminTable";
 import ViewModal from "./ViewModal";
 import AddOrEditCompany from "./AddOrEditCompany";
 import DeleteCompany from "./DeleteCompany";
+import ManageUsers from "./ManageUsers";
 
 export {
   CRMHeader,
@@ -20,4 +21,5 @@ export {
   ViewModal,
   AddOrEditCompany,
   DeleteCompany,
+  ManageUsers,
 };

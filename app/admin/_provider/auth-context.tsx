@@ -15,15 +15,39 @@ interface UserProfile {
   updated_at: string;
 }
 
+export interface DimensionUserType {
+  id: string;
+  display_name: string;
+  key: string;
+}
+
+export interface DimensionStatusType {
+  id: string;
+  display_name: string;
+  key: string;
+}
+
+export interface UserRole {
+  id: string;
+  key: string;
+  name: string;
+  description?: string;
+  is_active?: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
+  userTypes: DimensionUserType[];
+  statusTypes: DimensionStatusType[];
+  userRoles: UserRole[];
+  dimensionsLoading: boolean;
   signIn: (
     email: string,
     password: string
-  ) => Promise<{ data: any; error: any }>;
+  ) => Promise<{ data: any; error: any } | undefined>;
   signOut: () => Promise<void>;
 }
 
@@ -34,6 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userTypes, setUserTypes] = useState<DimensionUserType[]>([]);
+  const [statusTypes, setStatusTypes] = useState<DimensionStatusType[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const [dimensionsLoading, setDimensionsLoading] = useState(true);
 
   useEffect(() => {
     const {
@@ -51,6 +79,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    fetchDimensionData();
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -71,6 +103,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const fetchDimensionData = async () => {
+    setDimensionsLoading(true);
+    try {
+      // Fetch user types from dimension table
+      const { data: userTypesData, error: userTypesError } = await supabase
+        .from("dim_user_type")
+        .select("*");
+
+      if (userTypesError) {
+        console.error("Error fetching user types:", userTypesError);
+      } else {
+        setUserTypes(userTypesData || []);
+      }
+
+      // Fetch status types from dimension table
+      const { data: statusTypesData, error: statusTypesError } = await supabase
+        .from("dim_user_status")
+        .select("*");
+
+      if (statusTypesError) {
+        console.error("Error fetching status types:", statusTypesError);
+      } else {
+        setStatusTypes(statusTypesData || []);
+      }
+
+      // Fetch user roles from user_roles table
+      const { data: userRolesData, error: userRolesError } = await supabase
+        .from("user_roles")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (userRolesError) {
+        console.error("Error fetching user roles:", userRolesError);
+      } else {
+        setUserRoles(userRolesData || []);
+      }
+    } catch (error) {
+      console.error("Error loading dimension data:", error);
+    } finally {
+      setDimensionsLoading(false);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       const { data: signedInUser } = await supabase.auth.signInWithPassword({
@@ -80,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!signedInUser.user) {
         return { data: null, error: { message: "Invalid email or password" } };
       }
+      return { data: signedInUser, error: null };
     } catch (error) {
       console.error("Sign in error:", error);
       return { data: null, error: { message: "Authentication failed" } };
@@ -98,6 +174,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     session,
     loading,
+    userTypes,
+    statusTypes,
+    userRoles,
+    dimensionsLoading,
     signIn,
     signOut,
   };

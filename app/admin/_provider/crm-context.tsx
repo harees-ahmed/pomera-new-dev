@@ -24,6 +24,10 @@ interface CRMContextType {
     setLoading: (loading: boolean) => void;
     setCompanyManagement: (companyManagement: CompanyManagement[]) => void;
     addCompanyFields: (companyFields: CompanyField) => void;
+    updateCompanyField: (
+      fieldId: string,
+      companyField: Partial<CompanyField>
+    ) => Promise<void>;
     deleteCompanyField: (fieldId: string) => void;
   };
 }
@@ -83,6 +87,21 @@ export function CRMProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateCompanyField = async (
+    fieldId: string,
+    companyField: Partial<CompanyField>
+  ) => {
+    try {
+      setLoading(true);
+      await crmDatabase.updateCompanyField(fieldId, companyField);
+      await fetchCompanyManagement();
+    } catch (error) {
+      console.error("Error updating company management:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value: CRMContextType = {
     state: {
       loading,
@@ -93,6 +112,7 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       setLoading,
       setCompanyManagement,
       addCompanyFields,
+      updateCompanyField,
       deleteCompanyField,
     },
   };

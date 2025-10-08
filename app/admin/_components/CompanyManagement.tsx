@@ -21,9 +21,6 @@ export default function CompanyForm({
     render?: (value: any, row: any) => any;
   }[] = [];
   const management = state.companyManagement[0];
-  const hasActions = state.companyManagement.some(
-    (m) => m.is_edit || m.is_delete
-  );
 
   const onAction = (
     action?: "edit" | "delete" | "viewValues" | "add",
@@ -55,8 +52,6 @@ export default function CompanyForm({
       key === "id" ||
       key === "created_at" ||
       key === "dim_field_types" ||
-      key === "is_delete" ||
-      key === "is_edit" ||
       key === "dropdown_values"
     )
       return;
@@ -86,52 +81,46 @@ export default function CompanyForm({
     },
   });
 
-  if (hasActions) {
-    colName.push({
-      key: "actions",
-      label: "Actions",
-      render: (_value: any, row: any) => (
-        <div className="flex items-center gap-2">
-          {row.is_edit ? (
-            <button
-              type="button"
-              className="text-blue-600 hover:text-blue-800 text-sm"
-              onClick={() => onAction("edit", row)}
-            >
-              <Edit className="h-4 w-4" />
-            </button>
-          ) : null}
-          {row.is_delete ? (
-            <button
-              type="button"
-              className="text-rose-600 hover:text-rose-800 text-sm"
-              onClick={() => onAction("delete", row)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          ) : null}
-        </div>
-      ),
-    } as any);
-  }
+  colName.push({
+    key: "actions",
+    label: "Actions",
+    render: (_value: any, row: any) => (
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="text-blue-600 hover:text-blue-800 text-sm"
+          onClick={() => onAction("edit", row)}
+        >
+          <Edit className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className="text-rose-600 hover:text-rose-800 text-sm"
+          onClick={() => onAction("delete", row)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    ),
+  } as any);
 
   const data = state.companyManagement.map((management: CompanyManagement) => {
     const {
       id,
-      dim_field_types: { field_type },
+      field_type,
+      dim_field_types,
       field_name,
-      is_delete,
-      is_edit,
       is_mandatory,
+      display_order,
       dropdown_values,
     } = management;
 
     return {
       id,
-      field_type: field_type,
+      field_type: dim_field_types.field_type, // Display name
+      field_type_uuid: field_type, // UUID for saving
       field_name,
-      is_delete,
-      is_edit,
+      display_order,
       is_mandatory: is_mandatory ? "Yes" : "No",
       dropdown_values,
     };

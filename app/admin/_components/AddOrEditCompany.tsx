@@ -18,8 +18,17 @@ export default function AddOrEditCompany({
   const [showDropdownValues, setShowDropdownValues] = React.useState(false);
   const [showModal, setShowModal] = React.useState(false);
 
-  const [dropdownValues, setDropdownValues] = React.useState([
-    { display_name: "", display_order: 1, is_active: true },
+  const generateUUID = () => {
+    return crypto.randomUUID();
+  };
+
+  const [dropdownValues, setDropdownValues] = React.useState(() => [
+    {
+      id: crypto.randomUUID(),
+      display_name: "",
+      display_order: 1,
+      is_active: true,
+    },
   ]);
   const { state, actions } = useCRM();
   const isEditMode = !!row;
@@ -37,39 +46,44 @@ export default function AddOrEditCompany({
       // Edit mode - initialize with existing row data
       setFormData({
         field_name: row.field_name || "",
-        field_type_id: row.field_type_id || "",
-        field_type: row.field_type || "text",
+        field_type: row.field_type || "text", // Display name
+        field_type_uuid: row.field_type_uuid || "", // UUID for saving
         is_mandatory: row.is_mandatory === "Yes" || row.is_mandatory === true,
-        is_edit: row.is_edit || false,
-        is_delete: row.is_delete || false,
+        display_order: row.display_order || 1,
         dropdown_values: row.dropdown_values || [],
       });
     } else {
       // Add mode - initialize with default values
+      // Calculate next display_order (max + 1)
+      const maxDisplayOrder =
+        state.companyManagement.length > 0
+          ? Math.max(
+              ...state.companyManagement.map((m) => m.display_order || 0)
+            )
+          : 0;
+
       setFormData({
         field_name: "",
-        field_type_id:
-          state.fieldTypes.length > 0 ? state.fieldTypes[0].id : "",
         field_type:
           state.fieldTypes.length > 0 ? state.fieldTypes[0].field_type : "text",
+        field_type_uuid:
+          state.fieldTypes.length > 0 ? state.fieldTypes[0].id : "",
         is_mandatory: false,
-        is_edit: true,
-        is_delete: true,
+        display_order: maxDisplayOrder + 1,
         dropdown_values: [],
       });
     }
-  }, [open, row, state.fieldTypes]);
+  }, [open, row, state.fieldTypes, state.companyManagement]);
 
   const handleInputChange = (fieldName: string, value: any) => {
     if (fieldName === "field_type") {
-      // When field type changes, also update the field_type_id
       const selectedFieldType = state.fieldTypes.find(
         (ft) => ft.field_type === value
       );
       setFormData((prev) => ({
         ...prev,
-        field_type: value,
-        field_type_id: selectedFieldType?.id || "",
+        field_type: value, // Display name
+        field_type_uuid: selectedFieldType?.id || "", // UUID
       }));
 
       // Reset dropdown values when field type changes
@@ -94,6 +108,7 @@ export default function AddOrEditCompany({
     setDropdownValues((prev) => [
       ...prev,
       {
+        id: generateUUID(),
         display_name: "",
         display_order: prev.length + 1,
         is_active: true,
@@ -113,21 +128,36 @@ export default function AddOrEditCompany({
 
   const handleSave = async () => {
     if (row) {
-      console.log("Updating field:", formData);
-      // TODO: Implement update functionality
-    } else {
-      const saveData = {
+      // Edit mode - update existing field
+      // Note: field_type is not editable for existing fields to maintain data integrity
+      const updateData: Partial<CompanyField> = {
         field_name: formData.field_name,
         is_mandatory: formData.is_mandatory,
-        field_type: formData.field_type_id,
+        display_order: formData.display_order,
+      };
+
+      await actions.updateCompanyField(row.id, updateData);
+    } else {
+      // Add mode - create new field
+      const saveData: Partial<CompanyField> = {
+        field_name: formData.field_name,
+        is_mandatory: formData.is_mandatory,
+        field_type_id: formData.field_type_uuid, // Send UUID, not display name
+        display_order: formData.display_order,
+
         dropdown_values:
           formData.field_type === "dropdown"
-            ? dropdownValues.filter((v) => v.display_name.trim() !== "")
-            : null,
-        is_edit: formData.is_edit,
-        is_delete: formData.is_delete,
+            ? dropdownValues
+                .filter((v) => v.display_name.trim() !== "")
+                .map((v) => ({
+                  id: v.id || generateUUID(),
+                  display_name: v.display_name,
+                  display_order: v.display_order,
+                  is_active: v.is_active,
+                }))
+            : undefined,
       };
-      actions.addCompanyFields(saveData as CompanyField);
+      await actions.addCompanyFields(saveData as CompanyField);
     }
     onClose();
   };
@@ -166,11 +196,12 @@ export default function AddOrEditCompany({
                 Field Type
               </label>
               <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 value={formData.field_type || "text"}
                 onChange={(e) =>
                   handleInputChange("field_type", e.target.value)
                 }
+                disabled={isEditMode}
               >
                 <option value="">Select field type</option>
                 {state.fieldTypes.map((fieldType) => (
@@ -179,9 +210,15 @@ export default function AddOrEditCompany({
                   </option>
                 ))}
               </select>
+              {isEditMode && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Field type cannot be changed after creation to maintain data
+                  integrity.
+                </p>
+              )}
             </div>
 
-            {formData.field_type === "dropdown" && (
+            {formData.field_type === "dropdown" && !isEditMode && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Dropdown Values
@@ -276,6 +313,52 @@ export default function AddOrEditCompany({
               </div>
             )}
 
+            {formData.field_type === "dropdown" && isEditMode && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> To edit dropdown values for this field,
+                  use the eye icon (
+                  <span className="inline-flex items-center mx-1">
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </span>
+                  ) in the Values column of the table.
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Display Order
+              </label>
+              <input
+                type="number"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={formData.display_order || 1}
+                onChange={(e) =>
+                  handleInputChange(
+                    "display_order",
+                    parseInt(e.target.value) || 1
+                  )
+                }
+                min="1"
+                placeholder="Display order"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Order in which this field appears in forms and tables
+              </p>
+            </div>
+
             <div className="space-y-3">
               <label className="flex items-center">
                 <input
@@ -288,34 +371,6 @@ export default function AddOrEditCompany({
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Is Mandatory
-                </span>
-              </label>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.is_edit || false}
-                  onChange={(e) =>
-                    handleInputChange("is_edit", e.target.checked)
-                  }
-                  className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  Allow Edit
-                </span>
-              </label>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.is_delete || false}
-                  onChange={(e) =>
-                    handleInputChange("is_delete", e.target.checked)
-                  }
-                  className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  Allow Delete
                 </span>
               </label>
             </div>
