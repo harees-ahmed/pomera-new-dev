@@ -1,6 +1,7 @@
 import CRMHeader from "@/components/CRMHeader";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginForm from "./LoginForm";
+import CompleteSignupForm from "./CompleteSignupForm";
 import CompanyForm from "./CompanyManagement";
 import ContactsSection from "./ContactsSection";
 import AddressesSection from "./AddressesSection";
@@ -14,6 +15,7 @@ export {
   CRMHeader,
   ProtectedRoute,
   LoginForm,
+  CompleteSignupForm,
   CompanyForm,
   ContactsSection,
   AddressesSection,

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "../_lib";
+import { adminAuthClientSupabase } from "@/lib/supabase";
 
 interface UserProfile {
   id: string;
@@ -35,6 +36,13 @@ export interface UserRole {
   is_active?: boolean;
 }
 
+export interface InviteUserData {
+  email: string;
+  user_type: string;
+  role: string;
+  user_status: string;
+}
+
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
@@ -44,11 +52,15 @@ interface AuthContextType {
   statusTypes: DimensionStatusType[];
   userRoles: UserRole[];
   dimensionsLoading: boolean;
+  inviteUserLoading: boolean;
   signIn: (
     email: string,
     password: string
   ) => Promise<{ data: any; error: any } | undefined>;
   signOut: () => Promise<void>;
+  inviteUser: (
+    userData: InviteUserData
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [statusTypes, setStatusTypes] = useState<DimensionStatusType[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [dimensionsLoading, setDimensionsLoading] = useState(true);
+  const [inviteUserLoading, setInviteUserLoading] = useState(false);
 
   useEffect(() => {
     const {
@@ -169,6 +182,126 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
   };
 
+  const inviteUser = async (
+    userData: InviteUserData
+  ): Promise<{ success: boolean; error?: string }> => {
+    setInviteUserLoading(true);
+
+    try {
+      // Validate required fields
+      if (
+        !userData.email ||
+        !userData.user_type ||
+        !userData.role ||
+        !userData.user_status
+      ) {
+        return { success: false, error: "All fields are required" };
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userData.email)) {
+        return { success: false, error: "Please enter a valid email address" };
+      }
+
+      // Check if user already exists in auth
+      const { data: existingUsers, error: listError } =
+        await adminAuthClientSupabase.auth.admin.listUsers();
+
+      if (listError) {
+        console.error("Error checking existing users:", listError);
+        return { success: false, error: "Failed to verify user existence" };
+      }
+
+      const userExists = existingUsers?.users?.some(
+        (user) => user.email === userData.email
+      );
+      if (userExists) {
+        return { success: false, error: "User with this email already exists" };
+      }
+
+      // Generate a temporary password (user will set their own later)
+      const tempPassword = `Temp${Math.random()
+        .toString(36)
+        .slice(-8)}!${Date.now()}`;
+
+      // Create user with admin client (using service role key)
+      const { data: authData, error: authError } =
+        await adminAuthClientSupabase.auth.admin.createUser({
+          email: userData.email,
+          password: tempPassword,
+          email_confirm: false, // User needs to confirm email
+          user_metadata: {
+            user_type: userData.user_type,
+            role: userData.role,
+            user_status: userData.user_status,
+            signup_incomplete: true, // Flag to track incomplete signup
+          },
+        });
+
+      if (authError) {
+        console.error("Error creating user:", authError);
+        return {
+          success: false,
+          error: authError.message || "Failed to create user",
+        };
+      }
+
+      if (!authData?.user?.id) {
+        return { success: false, error: "Failed to create user account" };
+      }
+
+      // Insert pending user data into user_user table
+      const { error: insertError } = await supabase.from("user_user").insert({
+        id: authData.user.id,
+        email: userData.email,
+        user_type: userData.user_type,
+        role: userData.role,
+        user_status: userData.user_status,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      if (insertError) {
+        console.error("Error inserting user data:", insertError);
+        // Try to clean up the auth user if profile creation fails
+        await adminAuthClientSupabase.auth.admin.deleteUser(authData.user.id);
+        return { success: false, error: "Failed to create user profile" };
+      }
+
+      // Send password reset email (this acts as the signup invitation)
+      const { error: resetError } =
+        await adminAuthClientSupabase.auth.resetPasswordForEmail(
+          userData.email,
+          {
+            redirectTo: `${window.location.origin}/admin/complete-signup`,
+          }
+        );
+
+      if (resetError) {
+        console.error("Error sending signup email:", resetError);
+        return {
+          success: true,
+          error:
+            "User created but failed to send invitation email. Please resend manually.",
+        };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error in inviteUser:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+      };
+    } finally {
+      setInviteUserLoading(false);
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -178,8 +311,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     statusTypes,
     userRoles,
     dimensionsLoading,
+    inviteUserLoading,
     signIn,
     signOut,
+    inviteUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
