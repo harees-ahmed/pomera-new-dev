@@ -21,7 +21,7 @@ const getPostgresType = (fieldType: string): string => {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, fieldName, fieldType } = body;
+    const { action, fieldName, fieldType, oldFieldName } = body;
 
     if (!action || !fieldName) {
       return NextResponse.json(
@@ -67,9 +67,35 @@ export async function POST(request: NextRequest) {
           END IF;
         END $$;
       `;
+    } else if (action === "update") {
+      // Update/rename column - requires oldFieldName
+      if (!oldFieldName) {
+        return NextResponse.json(
+          {
+            error: "Missing required parameter: oldFieldName for update action",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Rename column if field name has changed
+      sql = `
+        DO $$ 
+        BEGIN
+          IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'companies' AND column_name = '${oldFieldName}'
+          ) AND NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'companies' AND column_name = '${fieldName}'
+          ) THEN
+            ALTER TABLE companies RENAME COLUMN "${oldFieldName}" TO "${fieldName}";
+          END IF;
+        END $$;
+      `;
     } else {
       return NextResponse.json(
-        { error: "Invalid action. Must be 'add' or 'remove'" },
+        { error: "Invalid action. Must be 'add', 'remove', or 'update'" },
         { status: 400 }
       );
     }
@@ -94,7 +120,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Column ${action === "add" ? "added" : "removed"} successfully`,
+      message: `Column ${
+        action === "add" ? "added" : action === "remove" ? "removed" : "updated"
+      } successfully`,
       fieldName,
     });
   } catch (error: any) {

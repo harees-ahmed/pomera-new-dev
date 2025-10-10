@@ -62,9 +62,10 @@ export interface DimensionValue {
 
 // Helper function to alter companies table
 async function alterCompaniesTable(
-  action: "add" | "remove",
+  action: "add" | "remove" | "update",
   fieldName: string,
-  fieldType?: string
+  fieldType?: string,
+  oldFieldName?: string
 ) {
   try {
     const baseUrl = getBaseUrl();
@@ -77,6 +78,7 @@ async function alterCompaniesTable(
         action,
         fieldName,
         fieldType,
+        oldFieldName,
       }),
     });
 
@@ -222,12 +224,34 @@ class CRMDatabase {
     companyField: Partial<CompanyField>
   ) {
     return withErrorHandling(async () => {
+      // Get the old field name before updating
+      const { data: oldFieldData } = await supabase
+        .from("company_management")
+        .select("field_name")
+        .eq("id", fieldId)
+        .single();
+
       const { error } = await supabase
         .from("company_management")
         .update(companyField)
         .eq("id", fieldId);
 
       if (error) throw error;
+
+      // If field_name has changed, rename the column in companies table
+      if (
+        companyField.field_name &&
+        oldFieldData?.field_name &&
+        companyField.field_name !== oldFieldData.field_name
+      ) {
+        await alterCompaniesTable(
+          "update",
+          companyField.field_name,
+          undefined,
+          oldFieldData.field_name
+        );
+      }
+
       return true;
     }, "Failed to update company field");
   }
